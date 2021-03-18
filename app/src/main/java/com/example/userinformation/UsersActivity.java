@@ -35,6 +35,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 public class UsersActivity extends AppCompatActivity {
+
     private ArrayList<ExampleItem> mExampleList = new ArrayList<>();
     private List<User> mUsersList;
     private Button logoutButton;
@@ -126,6 +127,7 @@ public class UsersActivity extends AppCompatActivity {
         }
 
     }
+
     private void signOut() {
         mGoogleSignInClient.signOut()
                 .addOnCompleteListener(this, new OnCompleteListener<Void>() {
@@ -133,6 +135,7 @@ public class UsersActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<Void> task) {
                         // ...
                         //acct = null;
+                        closing = false;
                         finish();
                         Intent intent = new Intent(UsersActivity.this, MainActivity.class);
 //                        String message = mExampleList.get(position).getText1();

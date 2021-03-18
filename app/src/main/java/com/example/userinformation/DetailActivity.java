@@ -2,6 +2,7 @@ package com.example.userinformation;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -22,7 +23,12 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
         editText = findViewById(R.id.textViewRes);
 
+//        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//        nm.cancelAsPackage("com.example.userinformation","mytag", 1);
+
         String message = getIntent().getStringExtra("message");
+
         //ExampleAdapter mAdapter = (ExampleAdapter) getIntent().getSerializableExtra("adapter");
         //ExampleItem myItem = (ExampleItem) getIntent().getSerializableExtra("myitem");
         editText.setText(message);

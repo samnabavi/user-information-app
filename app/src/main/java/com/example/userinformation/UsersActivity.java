@@ -17,8 +17,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -45,10 +48,13 @@ public class UsersActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager mLayoutManager;
 
     SharedPreferences sharedPreferences;
+
+    public static Boolean closing = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_users);
+        closing = true;
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
@@ -89,7 +95,9 @@ public class UsersActivity extends AppCompatActivity {
                 //intent.putExtra("adapter", mAdapter);
 //                ExampleItem item = mExampleList.get(0);
 //                intent.putExtra("myitem", item);
+                closing = false;
                 startActivity(intent);
+                //closing = true;
             }
         });
 
@@ -151,7 +159,7 @@ public class UsersActivity extends AppCompatActivity {
             mAdapter.notifyItemChanged(0);
         }
 
-
+        //closing = false;
     }
 
     @Override
@@ -161,7 +169,30 @@ public class UsersActivity extends AppCompatActivity {
         intent.setAction(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         startActivity(intent);
+        closing = true;
         sendNotification();
+    }
+
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+////        Intent intent = new Intent();
+////        intent.setAction(Intent.ACTION_MAIN);
+////        intent.addCategory(Intent.CATEGORY_HOME);
+////        startActivity(intent);
+//        if (!this.isFinishing()){
+//            //Insert your finishing code here
+//
+//            sendNotification();
+//        }
+//
+//
+//    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        closing = true;
     }
 
     public void sendNotification() {
@@ -183,15 +214,45 @@ public class UsersActivity extends AppCompatActivity {
         builder.setContentIntent(pendingIntent);
 
         NotificationManagerCompat managerCompat = NotificationManagerCompat.from(UsersActivity.this);
-        managerCompat.notify(1, builder.build());
+        managerCompat.notify("mytag",1,  builder.build());
+
     }
 
 //    @Override
 //    protected void onPause() {
 //        super.onPause();
-//        if (this.isFinishing()){
+//        if (!this.isFinishing() && closing){
 //            //Insert your finishing code here
 //            sendNotification();
 //        }
 //    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //if (!this.isFinishing()){
+        if(closing) {
+            //Insert your finishing code here
+
+            sendNotification();
+        }
+    }
+
+//    @Override
+//    public void onAttachedToWindow() {
+//        super.onAttachedToWindow();
+//        this.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
+//    }
+//
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//
+//        if(keyCode == KeyEvent.KEYCODE_HOME)
+//        {
+//            Toast.makeText(UsersActivity.this,"Thanks for using application!!",Toast.LENGTH_LONG).show();
+//            return true;
+//        }
+//        return false;
+//    }
+
 }

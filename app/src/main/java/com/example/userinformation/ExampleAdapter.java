@@ -88,6 +88,12 @@ public class ExampleAdapter extends RecyclerView.Adapter<ExampleAdapter.ExampleV
 
     @Override
     public int getItemCount() {
+
         return mExampleList.size();
+//        try {
+//            return mExampleList.size();
+//        } catch (Exception e) {
+//            return 0;
+//        }
     }
 }

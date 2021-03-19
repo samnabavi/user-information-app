@@ -1,7 +1,12 @@
 package com.example.userinformation;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,52 +36,19 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     //Button loginButton;
-    String myResponse;
+    //String myResponse;
+
     SignInButton signin;
     GoogleSignInClient mGoogleSignInClient;
     int RC_SIGN_IN=0;
+    public static boolean closing = true;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        closing = true;
         setContentView(R.layout.activity_main);
-        //loginButton = findViewById(R.id.login_button);
-//        OkHttpClient client = new OkHttpClient();
-//        String url = "https://jsonplaceholder.typicode.com/users";
-//        //String url = "https://reqres.in/api/users?page=2";
-//        Request request = new Request.Builder()
-//                .url(url)
-//                .build();
-//
-//        client.newCall(request).
-//
-//                enqueue(new Callback() {
-//                    @Override
-//                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
-//                        System.out.println("************************************************************");
-//
-//                        e.printStackTrace();
-//                    }
-//
-//                    @Override
-//                    public void onResponse(@NotNull Call call, @NotNull Response response) throws
-//                            IOException {
-//                        if (response.isSuccessful()) {
-//
-//                            myResponse = response.body().string();
-//
-//
-//                        }
-//                    }
-//                });
-
-//        loginButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(MainActivity.this, UsersActivity.class);
-//                intent.putExtra("res", myResponse);
-//                startActivity(intent);
-//            }
-//        });
         signin = findViewById(R.id.sign_in_button);
         signin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,10 +57,10 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.sign_in_button:
                         signIn();
                         break;
-                    // ...
                 }
             }
         });
+
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
@@ -103,54 +75,86 @@ public class MainActivity extends AppCompatActivity {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         if(account != null) {
 
-            Intent intent = new Intent(MainActivity.this, QuickActivity.class);
-            //intent.putExtra("res", myResponse);
-            System.out.println("-----------------------------------------------------");
-            //System.out.println("myRes " + myResponse);
+            closing = false;
+            Intent intent = new Intent(MainActivity.this, UsersActivity.class);
             startActivity(intent);
 
         }
     }
+
+
     private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
+        closing = false;
     }
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
-            // The Task returned from this call is always completed, no need to attach
-            // a listener.
+
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
         }
     }
+
+
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-
-            Intent intent = new Intent(MainActivity.this, QuickActivity.class);
-            //intent.putExtra("res", myResponse);
+            closing = false;
+            Intent intent = new Intent(MainActivity.this, UsersActivity.class);
             startActivity(intent);
         } catch (ApiException e) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
             Log.w("TAG", "signInResult:failed code=" + e.getStatusCode());
-            //updateUI(null);
         }
     }
 
     @Override
     public void onBackPressed() {
-        //super.onBackPressed();
-//        Intent intent = new Intent();
-//        intent.setAction(Intent.ACTION_MAIN);
-//        intent.addCategory(Intent.CATEGORY_HOME);
-//        startActivity(intent);
+
         Toast.makeText(MainActivity.this,"You have to signin first!",Toast.LENGTH_LONG).show();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(closing ) {
+            sendNotification();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        NotificationManager nm = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.cancel("mytag3", 3);
+    }
+
+    public void sendNotification() {
+        String msg = "Come Back";
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "My Notification01");
+        builder.setContentTitle("Missed You");
+        builder.setContentText(msg);
+        builder.setSmallIcon(R.drawable.ic_launcher_background);
+        builder.setAutoCancel(true);
+
+        Intent intent = new Intent(MainActivity.this,
+                MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //intent.putExtra("message", msg);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this,
+                0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        builder.setContentIntent(pendingIntent);
+
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(MainActivity.this);
+        managerCompat.notify("mytag3",3,  builder.build());
+
+    }
 
 }
